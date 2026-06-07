@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>David's Activity Log</title>
+<style>
+  :root {
+    --cream: #F7F4EF;
+    --ink: #1C1C1C;
+    --muted: #7A7670;
+    --border: #E0DDD8;
+    --accent: #2D5A3D;
+    --accent-light: #EAF0EC;
+    --white: #FFFFFF;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* HEADER */
+  .header {
+    margin-bottom: 2rem;
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+  .header-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+  }
+
+  /* STATS STRIP */
+  .stats-strip {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1.1rem;
+    flex: 1;
+    min-width: 120px;
+  }
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 0.15rem;
+  }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 2rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--accent-light);
+  }
+
+  /* PERIOD / WEEK CARDS */
+  .period-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.6rem;
+    overflow: hidden;
+  }
+  .period-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    cursor: pointer;
+    user-select: none;
+    background: var(--white);
+    transition: background 0.15s;
+  }
+  .period-header:hover { background: var(--cream); }
+  .period-header.open { background: var(--accent-light); }
+  .period-header-left { display: flex; align-items: center; gap: 0.75rem; }
+  .period-dates {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .period-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .period-chevron {
+    font-size: 11px;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .period-chevron.open { transform: rotate(180deg); }
+  .period-body {
+    display: none;
+    padding: 1rem 1.1rem 1.1rem;
+    border-top: 1px solid var(--border);
+  }
+  .period-body.open { display: block; }
+
+  /* WEEK WITHIN PERIOD (for older 2-week periods) */
+  .week-block { margin-bottom: 1.25rem; }
+  .week-block:last-child { margin-bottom: 0; }
+  .week-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  /* DAILY ENTRIES */
+  .day-entry {
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 13px;
+  }
+  .day-entry:last-child { border-bottom: none; }
+  .day-name {
+    font-weight: 600;
+    color: var(--ink);
+    margin-right: 0.4rem;
+  }
+  .day-note {
+    color: var(--muted);
+    font-style: italic;
+    font-size: 12px;
+    display: block;
+    margin-top: 2px;
+    margin-left: 0;
+  }
+
+  /* TOTALS ROW */
+  .totals-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .total-chip {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: var(--cream);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .total-chip strong { color: var(--ink); }
+
+  /* HIGHLIGHTS */
+  .highlights {
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .highlight-item {
+    font-size: 13px;
+    padding: 0.3rem 0;
+    color: var(--ink);
+    display: flex;
+    gap: 0.5rem;
+  }
+  .highlight-item::before {
+    content: "·";
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* MASTER SUMMARY TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 1.5rem;
+  }
+  th {
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--cream);
+    color: var(--ink);
+  }
+  tr:last-child td { border-bottom: none; }
+  .score-highlight { color: var(--accent); font-weight: 700; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 3rem;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-label">Village Yoga · Sam Breschi</div>
+    <div class="header-title">David's Activity Log</div>
+
+    <!-- STATS STRIP -->
+    <div class="stats-strip">
+      <div class="stat-card">
+        <div class="stat-label">Current Weight</div>
+        <div class="stat-value">208</div>
+        <div class="stat-sub">lbs · May 2026</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Overall Activity</div>
+        <div class="stat-value">87%</div>
+        <div class="stat-sub">Nov 2025 – May 2026</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Last Updated</div>
+        <div class="stat-value" style="font-size:16px;padding-top:4px;">Jun 7</div>
+        <div class="stat-sub">2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── RECENT WEEKS ─────────────────────────────── -->
+  <div class="section-title">Recent Weeks</div>
+
+  <!-- WEEK: JUNE 1–7 (open by default) -->
+  <div class="period-card">
+    <div class="period-header open" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Jun 1 – Jun 7, 2026</span>
+        <span class="period-badge">Current week</span>
+      </div>
+      <span class="period-chevron open">▼</span>
+    </div>
+    <div class="period-body open">
+      <div class="day-entry"><span class="day-name">Mon Jun 1</span> Rest · social dinner with son Jed (Boston)</div>
+      <div class="day-entry"><span class="day-name">Tue Jun 2</span> Peloton 45 mins — alcohol-free</div>
+      <div class="day-entry"><span class="day-name">Wed Jun 3</span> Peloton 45 mins — alcohol-free</div>
+      <div class="day-entry"><span class="day-name">Thu Jun 4</span> Strength workout 30 mins · VO2 max test with doctor — 91st percentile for age bracket (20 min stationary bike, peak HR 156)</div>
+      <div class="day-entry"><span class="day-name">Fri Jun 5</span> Unreported</div>
+      <div class="day-entry"><span class="day-name">Sat Jun 6</span> Unreported</div>
+      <div class="day-entry"><span class="day-name">Sun Jun 7</span> Unreported</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 1</span>
+        <span class="total-chip"><strong>Cardio:</strong> 2</span>
+        <span class="total-chip"><strong>Rest:</strong> 1</span>
+        <span class="total-chip"><strong>Unreported:</strong> 3</span>
+        <span class="total-chip"><strong>Active:</strong> 3 of 7</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">VO2 max test Jun 4 — 91st percentile for age bracket (peak HR 156)</div>
+        <div class="highlight-item">Alcohol-free Tuesday and Wednesday — two strong recovery days</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK: MAY 25–31 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">May 25 – May 31, 2026</span>
+        <span class="period-badge">57% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Mon May 25</span> Strength workout · 18 holes walking (NYC)</div>
+      <div class="day-entry"><span class="day-name">Tue May 26</span> Rest — elbow pain
+        <span class="day-note">Minor flare · follow up with PT for manual therapy</span>
+      </div>
+      <div class="day-entry"><span class="day-name">Wed May 27</span> Rest / recovery</div>
+      <div class="day-entry"><span class="day-name">Thu May 28</span> Yoga with Sam · 5K run — felt great</div>
+      <div class="day-entry"><span class="day-name">Fri May 29</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Sat May 30</span> Rest — sore</div>
+      <div class="day-entry"><span class="day-name">Sun May 31</span> Strength workout · cardio — light on elbow</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 2</span>
+        <span class="total-chip"><strong>Cardio:</strong> 2</span>
+        <span class="total-chip"><strong>Golf:</strong> 1 round</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 1</span>
+        <span class="total-chip"><strong>Rest:</strong> 3</span>
+        <span class="total-chip"><strong>Active:</strong> 4 of 7</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">5K run Thursday — felt great</div>
+        <div class="highlight-item">Elbow flare May 26 — follow up with PT for manual therapy</div>
+        <div class="highlight-item">Strength and cardio Sunday, light on elbow</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK: MAY 19–25 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">May 19 – May 25, 2026</span>
+        <span class="period-badge">57% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Mon May 19</span> 30 min HIIT (MadFit) · golf lesson · 9 holes walking</div>
+      <div class="day-entry"><span class="day-name">Tue May 20</span> Rest (Chicago)</div>
+      <div class="day-entry"><span class="day-name">Wed May 21</span> Rest (Chicago)</div>
+      <div class="day-entry"><span class="day-name">Thu May 22</span> Cardio (Chicago)</div>
+      <div class="day-entry"><span class="day-name">Fri May 23</span> Unreported</div>
+      <div class="day-entry"><span class="day-name">Sat May 24</span> Unreported</div>
+      <div class="day-entry"><span class="day-name">Sun May 25</span> Mobility flow · walk with Beth</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Cardio:</strong> 2</span>
+        <span class="total-chip"><strong>Golf:</strong> 1 (9 holes)</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 1</span>
+        <span class="total-chip"><strong>Rest:</strong> 2</span>
+        <span class="total-chip"><strong>Unreported:</strong> 2</span>
+        <span class="total-chip"><strong>Active:</strong> 4 of 7</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Chicago travel mid-week</div>
+        <div class="highlight-item">Golf lesson + 9 holes Monday</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK: MAY 12–18 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">May 12 – May 18, 2026</span>
+        <span class="period-badge">86% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Mon May 12</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Tue May 13</span> 18 holes walking · par 3, 9 holes walking</div>
+      <div class="day-entry"><span class="day-name">Wed May 14</span> 36 holes walking — 21K steps
+        <span class="day-note">Fasting till 10am this week · sleep so-so</span>
+      </div>
+      <div class="day-entry"><span class="day-name">Thu May 15</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Fri May 16</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Sat May 17</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Sun May 18</span> 30 min elliptical</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Cardio:</strong> 1</span>
+        <span class="total-chip"><strong>Golf:</strong> 6 rounds (99 holes)</span>
+        <span class="total-chip"><strong>Rest:</strong> 1</span>
+        <span class="total-chip"><strong>Active:</strong> 6 of 7</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">36 holes walking Wednesday — 21K steps</div>
+        <div class="highlight-item">99 holes in 5 days</div>
+        <div class="highlight-item">Intermittent fasting — first meal 10am</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK: MAY 5–11 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">May 5 – May 11, 2026</span>
+        <span class="period-badge">57% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Mon May 5</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Tue May 6</span> Cardio · push-up progression</div>
+      <div class="day-entry"><span class="day-name">Wed May 7</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Thu May 8</span> Strength workout · 18 holes (cart)</div>
+      <div class="day-entry"><span class="day-name">Fri May 9</span> Rest — cold symptoms</div>
+      <div class="day-entry"><span class="day-name">Sat May 10</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Sun May 11</span> 18 holes walking</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 1</span>
+        <span class="total-chip"><strong>Cardio:</strong> 1</span>
+        <span class="total-chip"><strong>Golf:</strong> 2 rounds</span>
+        <span class="total-chip"><strong>Rest:</strong> 4</span>
+        <span class="total-chip"><strong>Active:</strong> 4 of 7</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Cold symptoms Friday — extra rest taken</div>
+        <div class="highlight-item">Weight steady at 209 lbs · eating first meal ~11am</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK: MAY 3–4 (stub) -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">May 3 – May 4, 2026</span>
+        <span class="period-badge">50% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Sat May 3</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Sun May 4</span> Strength workout</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 1</span>
+        <span class="total-chip"><strong>Active:</strong> 1 of 2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── EARLIER PERIODS ──────────────────────────── -->
+  <div class="section-title">Earlier Periods</div>
+
+  <!-- PERIOD 11: APR 19 – MAY 2 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Apr 19 – May 2, 2026</span>
+        <span class="period-badge">86% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="week-block">
+        <div class="week-label">Apr 19–25</div>
+        <div class="day-entry"><span class="day-name">Sat Apr 19</span> Golf lesson 90 mins · elliptical 30 mins · strength training</div>
+        <div class="day-entry"><span class="day-name">Sun Apr 20</span> PT session · rest</div>
+        <div class="day-entry"><span class="day-name">Mon Apr 21</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Tue Apr 22</span> Rest (soreness)</div>
+        <div class="day-entry"><span class="day-name">Wed Apr 23</span> Home gym workout (DC) · golf practice
+          <span class="day-note">Pinching under clavicle — stay off decline pushups</span>
+        </div>
+        <div class="day-entry"><span class="day-name">Thu Apr 24</span> Rear chain PT exercises · 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Fri Apr 25</span> Peloton 45 mins</div>
+      </div>
+      <div class="week-block">
+        <div class="week-label">Apr 26 – May 2</div>
+        <div class="day-entry"><span class="day-name">Sat Apr 26</span> 30 min rotational mobility
+          <span class="day-note">Clavicle pinching · neck tightness</span>
+        </div>
+        <div class="day-entry"><span class="day-name">Sun Apr 27</span> Strength session · Weight: 210 lbs</div>
+        <div class="day-entry"><span class="day-name">Mon Apr 28</span> Rest</div>
+        <div class="day-entry"><span class="day-name">Tue Apr 29</span> 18 holes walking · push-up progression</div>
+        <div class="day-entry"><span class="day-name">Wed Apr 30</span> Golf — walk/ride combo</div>
+        <div class="day-entry"><span class="day-name">Fri May 1</span> 3-mile run with Ava (NYC)</div>
+        <div class="day-entry"><span class="day-name">Sat May 2</span> Full body workout with Sam · bodywork — shoulders, neck, hips</div>
+      </div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 5</span>
+        <span class="total-chip"><strong>Cardio:</strong> 4</span>
+        <span class="total-chip"><strong>Golf:</strong> 4 rounds + practice</span>
+        <span class="total-chip"><strong>PT:</strong> 2</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 2</span>
+        <span class="total-chip"><strong>Active:</strong> 12 of 14</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Sam's in-person visit May 2 — full body workout + bodywork (shoulders, neck, hips)</div>
+        <div class="highlight-item">3-mile run with Ava in NYC May 1</div>
+        <div class="highlight-item">Clavicle/neck tightness flagged — no decline pushups</div>
+        <div class="highlight-item">Weight 210 lbs Apr 27</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 10: APR 11–18 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Apr 11 – Apr 18, 2026</span>
+        <span class="period-badge">88% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Sat Apr 11</span> Strength workout · elliptical 30 mins</div>
+      <div class="day-entry"><span class="day-name">Sun Apr 12</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Mon Apr 13</span> Golf practice 90 mins · strength workout · sauna</div>
+      <div class="day-entry"><span class="day-name">Tue Apr 14</span> Mobility and strength session with Sam</div>
+      <div class="day-entry"><span class="day-name">Wed Apr 15</span> 18 holes walking — Shot 72 at Shell Bay</div>
+      <div class="day-entry"><span class="day-name">Thu Apr 16</span> 9 holes walking · stretching 20 mins · treadmill 20 mins</div>
+      <div class="day-entry"><span class="day-name">Fri Apr 17</span> Unreported</div>
+      <div class="day-entry"><span class="day-name">Sat Apr 18</span> 18 holes walking</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 3</span>
+        <span class="total-chip"><strong>Cardio:</strong> 2</span>
+        <span class="total-chip"><strong>Golf:</strong> 4 rounds + practice</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 1</span>
+        <span class="total-chip"><strong>Active:</strong> 7 of 8</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Shot 72 at Shell Bay — Apr 15</div>
+        <div class="highlight-item">Strong week — consistent strength and golf</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 9: MAR 20 – APR 10 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Mar 20 – Apr 10, 2026</span>
+        <span class="period-badge">77% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="week-block">
+        <div class="week-label">Mar 20–22</div>
+        <div class="day-entry"><span class="day-name">Fri Mar 20</span> Moderate strength — incorporating PT elbow exercises</div>
+        <div class="day-entry"><span class="day-name">Sat Mar 21</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Sun Mar 22</span> Rest</div>
+      </div>
+      <div class="week-block">
+        <div class="week-label">Mar 23–29</div>
+        <div class="day-entry"><span class="day-name">Mon Mar 23</span> PT for elbow</div>
+        <div class="day-entry"><span class="day-name">Tue Mar 24</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Thu Mar 26</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Fri Mar 27</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Sat Mar 28</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Sun Mar 29</span> Rest</div>
+      </div>
+      <div class="week-block">
+        <div class="week-label">Mar 30 – Apr 5</div>
+        <div class="day-entry"><span class="day-name">Mon Mar 30</span> PT exercises · Peloton 30 mins · sauna · Weight: 209.8 lbs</div>
+        <div class="day-entry"><span class="day-name">Tue Mar 31</span> Tennis lesson 1 hour (intense)</div>
+        <div class="day-entry"><span class="day-name">Wed Apr 1</span> Walking with Max: 4 miles</div>
+        <div class="day-entry"><span class="day-name">Thu Apr 2</span> Leg workout · elevated push-ups</div>
+        <div class="day-entry"><span class="day-name">Sat Apr 4</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Sun Apr 5</span> Treadmill 2 miles · full body strength</div>
+      </div>
+      <div class="week-block">
+        <div class="week-label">Apr 6–10</div>
+        <div class="day-entry"><span class="day-name">Mon Apr 6</span> 18 holes walking</div>
+        <div class="day-entry"><span class="day-name">Tue Apr 7</span> Mobility session with Sam — rotation focus</div>
+        <div class="day-entry"><span class="day-name">Thu Apr 9</span> PT session — cleared for upper body training · full body strength video</div>
+        <div class="day-entry"><span class="day-name">Fri Apr 10</span> 18 holes walking</div>
+      </div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 4</span>
+        <span class="total-chip"><strong>Cardio:</strong> 5</span>
+        <span class="total-chip"><strong>Golf:</strong> 8 rounds</span>
+        <span class="total-chip"><strong>PT:</strong> 3</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 2</span>
+        <span class="total-chip"><strong>Tennis:</strong> 1</span>
+        <span class="total-chip"><strong>Active:</strong> 17 of 22</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Cleared for full upper body training by PT — Apr 9</div>
+        <div class="highlight-item">Weight 209.8 lbs Mar 30</div>
+        <div class="highlight-item">Cold recovery complete</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 8: MAR 7–19 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Mar 7 – Mar 19, 2026</span>
+        <span class="period-badge">92% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Sat Mar 8</span> 36 holes (Bakers Bay) · sauna · cold plunge
+        <span class="day-note">Weight ~211 lbs · elbow hurting with golf volume</span>
+      </div>
+      <div class="day-entry"><span class="day-name">Sun–Mon Mar 8–9</span> Cardio · recovery · 18 holes · treadmill 3 miles</div>
+      <div class="day-entry"><span class="day-name">Tue Mar 10</span> Virtual mobility session with Sam</div>
+      <div class="day-entry"><span class="day-name">Wed Mar 11</span> Rest — skipped golf (elbow) · treadmill with weighted vest
+        <span class="day-note">Weight 211.6 lbs · golfer's elbow treatment started</span>
+      </div>
+      <div class="day-entry"><span class="day-name">Thu Mar 12</span> Tennis lesson 1 hour · PT: dry needling + electric stim
+        <span class="day-note">Weight 210 lbs · felt much better</span>
+      </div>
+      <div class="day-entry"><span class="day-name">Fri Mar 13</span> Elliptical 30 mins · PT elbow exercises</div>
+      <div class="day-entry"><span class="day-name">Sat Mar 14</span> 18 holes golf</div>
+      <div class="day-entry"><span class="day-name">Sun Mar 15</span> Rest (soreness) · tennis 1 hour</div>
+      <div class="day-entry"><span class="day-name">Tue Mar 17</span> Virtual mobility session with Sam</div>
+      <div class="day-entry"><span class="day-name">Wed Mar 18</span> Treadmill 30 mins
+        <span class="day-note">Coming down with a cold</span>
+      </div>
+      <div class="day-entry"><span class="day-name">Thu Mar 19</span> PT session (elbow)
+        <span class="day-note">Cold ongoing</span>
+      </div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Cardio:</strong> 5</span>
+        <span class="total-chip"><strong>Golf:</strong> 3+ rounds</span>
+        <span class="total-chip"><strong>PT:</strong> 2</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 2</span>
+        <span class="total-chip"><strong>Active:</strong> 12 of 13</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">36 holes at Bakers Bay Mar 8</div>
+        <div class="highlight-item">PT started Mar 12 — dry needling + electric stim</div>
+        <div class="highlight-item">No strength training this period</div>
+        <div class="highlight-item">Cold hit Mar 18–19</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 7: FEB 14 – MAR 6 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Feb 14 – Mar 6, 2026</span>
+        <span class="period-badge">86% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Sat Feb 14</span> 18 holes walking · tennis lesson 1 hour</div>
+      <div class="day-entry"><span class="day-name">Sun Feb 15</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Mon Feb 16</span> 18 holes walking (5 miles) · cold plunge</div>
+      <div class="day-entry"><span class="day-name">Tue Feb 17</span> Treadmill 30 mins, 3 miles · massage</div>
+      <div class="day-entry"><span class="day-name">Thu Feb 19</span> Virtual mobility session with Sam</div>
+      <div class="day-entry"><span class="day-name">Fri Feb 20</span> 18 holes walking (Member Guest Day 1)</div>
+      <div class="day-entry"><span class="day-name">Sat Feb 21</span> 18 holes walking (Member Guest Day 2)</div>
+      <div class="day-entry"><span class="day-name">Sun Feb 22</span> Rest — elbow injured (umbrella)</div>
+      <div class="day-entry"><span class="day-name">Mon Feb 23</span> Strength: squats 45 lbs, chest press 35 lbs, Arnold press 25 lbs · golf practice</div>
+      <div class="day-entry"><span class="day-name">Tue Feb 24</span> 18 holes · iced elbow · yoga with Sam</div>
+      <div class="day-entry"><span class="day-name">Wed Feb 25</span> Tennis lesson · trainer workout · massage · golf practice</div>
+      <div class="day-entry"><span class="day-name">Fri Feb 27</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Sat Feb 28</span> 18 holes walking — Shot 74</div>
+      <div class="day-entry"><span class="day-name">Sun Mar 1</span> Treadmill run</div>
+      <div class="day-entry"><span class="day-name">Mon Mar 2</span> 18 holes walking (Augusta National) — Shot 78</div>
+      <div class="day-entry"><span class="day-name">Tue Mar 3</span> 18 holes walking (Augusta National)</div>
+      <div class="day-entry"><span class="day-name">Wed Mar 4</span> Full body workout · massage</div>
+      <div class="day-entry"><span class="day-name">Thu Mar 5</span> 18 holes</div>
+      <div class="day-entry"><span class="day-name">Fri Mar 6</span> 18 holes</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 3</span>
+        <span class="total-chip"><strong>Cardio:</strong> 5</span>
+        <span class="total-chip"><strong>Golf:</strong> 12 rounds + 2 lessons</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 3</span>
+        <span class="total-chip"><strong>Recovery:</strong> 4</span>
+        <span class="total-chip"><strong>Active:</strong> 18 of 21</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Shot 74 — Feb 28</div>
+        <div class="highlight-item">Shot 78 at Augusta National — Mar 2</div>
+        <div class="highlight-item">198 holes total this period</div>
+        <div class="highlight-item">Elbow injured Feb 22 (umbrella) — managed with ice</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 6: JAN 31 – FEB 13 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Jan 31 – Feb 13, 2026</span>
+        <span class="period-badge">93% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Sat Jan 31</span> 18 holes walking (Members Tournament Final)</div>
+      <div class="day-entry"><span class="day-name">Sun Feb 1</span> Treadmill 30 mins, 3 miles</div>
+      <div class="day-entry"><span class="day-name">Mon Feb 2</span> Rest · Thai massage with PT-style bodywork</div>
+      <div class="day-entry"><span class="day-name">Tue Feb 3</span> Golf lesson · 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Wed Feb 4</span> Strength training with Fannar</div>
+      <div class="day-entry"><span class="day-name">Thu Feb 5</span> Peloton 30 mins (travel day)</div>
+      <div class="day-entry"><span class="day-name">Fri Feb 6</span> Tanita Body Composition: metabolic age 40 · body fat 19% · physique above average</div>
+      <div class="day-entry"><span class="day-name">Sat Feb 7</span> Strength workout · steam</div>
+      <div class="day-entry"><span class="day-name">Sun Feb 8</span> Golf practice · sauna · cold plunge</div>
+      <div class="day-entry"><span class="day-name">Mon Feb 9</span> Tennis lesson 1 hour · golf lesson — lost 2 lbs</div>
+      <div class="day-entry"><span class="day-name">Tue Feb 10</span> 18 holes walking · massage</div>
+      <div class="day-entry"><span class="day-name">Wed Feb 11</span> 18 holes at MJ's club, Palm Beach</div>
+      <div class="day-entry"><span class="day-name">Thu Feb 12</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Fri Feb 13</span> 18 holes walking</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 2</span>
+        <span class="total-chip"><strong>Cardio:</strong> 3</span>
+        <span class="total-chip"><strong>Golf:</strong> 7 rounds + 3 lessons</span>
+        <span class="total-chip"><strong>PT:</strong> 1</span>
+        <span class="total-chip"><strong>Recovery:</strong> 4</span>
+        <span class="total-chip"><strong>Active:</strong> 13 of 14</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Body comp test Feb 6 — metabolic age 40, body fat 19%, physique above average</div>
+        <div class="highlight-item">First tennis lesson Feb 9</div>
+        <div class="highlight-item">108 holes in 14 days</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 5: JAN 16–30 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Jan 16 – Jan 30, 2026</span>
+        <span class="period-badge">93% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Fri Jan 16</span> Elliptical 20 mins</div>
+      <div class="day-entry"><span class="day-name">Sat Jan 17</span> 18 holes (cart) — Shot 77</div>
+      <div class="day-entry"><span class="day-name">Sun Jan 18</span> Full body golf-focus workout</div>
+      <div class="day-entry"><span class="day-name">Mon Jan 19</span> 18 holes walking (15K steps) — Shot 79</div>
+      <div class="day-entry"><span class="day-name">Tue Jan 20</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Wed Jan 21</span> Virtual yoga with Sam</div>
+      <div class="day-entry"><span class="day-name">Thu Jan 22</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Fri Jan 23</span> Treadmill 3 miles (weighted vest) · push-ups · core</div>
+      <div class="day-entry"><span class="day-name">Sat Jan 24</span> Golf practice</div>
+      <div class="day-entry"><span class="day-name">Sun Jan 25</span> Golf practice · chest press / deadlifts / TRX rows · Weight 207–209 lbs</div>
+      <div class="day-entry"><span class="day-name">Mon Jan 26</span> Rest — sore elbow, slight dehydration</div>
+      <div class="day-entry"><span class="day-name">Tue Jan 27</span> Full body stability workout with Sam</div>
+      <div class="day-entry"><span class="day-name">Wed Jan 28</span> 18 holes walking (Tournament Day 1)</div>
+      <div class="day-entry"><span class="day-name">Thu Jan 29</span> 18 holes walking (Tournament Day 2)</div>
+      <div class="day-entry"><span class="day-name">Fri Jan 30</span> 27 holes walking (Tournament Day 3)</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 4</span>
+        <span class="total-chip"><strong>Cardio:</strong> 2</span>
+        <span class="total-chip"><strong>Golf:</strong> 10 activities · 117 holes</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 3</span>
+        <span class="total-chip"><strong>Active:</strong> 14 of 15</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">3 consecutive rounds under 80 — 72, 77, 79</div>
+        <div class="highlight-item">Members Tournament Days 1–3</div>
+        <div class="highlight-item">117 holes total</div>
+        <div class="highlight-item">Weight 207–209 lbs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 4: JAN 2–15 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Jan 2 – Jan 15, 2026</span>
+        <span class="period-badge">79% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Fri Jan 2</span> Golf stretch · treadmill 2 miles · steam (travel day)</div>
+      <div class="day-entry"><span class="day-name">Sat Jan 3</span> Full body strength with Beth and Sam (NYC)</div>
+      <div class="day-entry"><span class="day-name">Sun Jan 4</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Mon Jan 5</span> Peloton 45 mins</div>
+      <div class="day-entry"><span class="day-name">Tue Jan 6</span> Full body strength (solo) · core 10 mins</div>
+      <div class="day-entry"><span class="day-name">Wed Jan 7</span> Elliptical 30 mins</div>
+      <div class="day-entry"><span class="day-name">Thu Jan 8</span> 18 holes (cart) · Weight 207.5 lbs · sauna</div>
+      <div class="day-entry"><span class="day-name">Fri Jan 9</span> HIIT 30 mins (MadFit) · stretching</div>
+      <div class="day-entry"><span class="day-name">Sat Jan 10</span> Rest — left elbow pain flagged</div>
+      <div class="day-entry"><span class="day-name">Sun Jan 11</span> Peloton 45 mins</div>
+      <div class="day-entry"><span class="day-name">Mon Jan 12</span> Rest</div>
+      <div class="day-entry"><span class="day-name">Tue Jan 13</span> Yoga, mobility, balance with Sam (Miami)</div>
+      <div class="day-entry"><span class="day-name">Wed Jan 14</span> Treadmill 30 mins (weighted vest) · golf practice</div>
+      <div class="day-entry"><span class="day-name">Thu Jan 15</span> 5 holes + golf lesson 1.5 hrs · strength at Shell Bay · cold plunge · sauna</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 4</span>
+        <span class="total-chip"><strong>Cardio:</strong> 5</span>
+        <span class="total-chip"><strong>Golf:</strong> 4 activities</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 3</span>
+        <span class="total-chip"><strong>Active:</strong> 11 of 14</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">207.5 lbs Jan 8</div>
+        <div class="highlight-item">Left elbow flagged Jan 10 — good by Jan 15</div>
+        <div class="highlight-item">New trainer at Shell Bay started</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 3: DEC 18 – JAN 1 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Dec 18 – Jan 1, 2026</span>
+        <span class="period-badge">93% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Thu Dec 18</span> Golf lesson · 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Fri Dec 19</span> Golf practice · cold plunge · sauna · stretching</div>
+      <div class="day-entry"><span class="day-name">Sat Dec 20</span> Walking with Beth (weighted vest) · strength workout</div>
+      <div class="day-entry"><span class="day-name">Sun Dec 21</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Mon Dec 22</span> Padel lesson · sauna · cold plunge</div>
+      <div class="day-entry"><span class="day-name">Tue Dec 23</span> 18 holes walking</div>
+      <div class="day-entry"><span class="day-name">Wed Dec 24</span> Full body dumbbell workout 45 mins</div>
+      <div class="day-entry"><span class="day-name">Thu Dec 25</span> Rest (Christmas)</div>
+      <div class="day-entry"><span class="day-name">Fri Dec 26</span> Strength workout (Wayne) · elliptical 15 mins</div>
+      <div class="day-entry"><span class="day-name">Sat Dec 27</span> 18 holes walking (Apogee)</div>
+      <div class="day-entry"><span class="day-name">Sun Dec 28</span> Walking with Beth (weighted vest) · golf practice · cold plunge</div>
+      <div class="day-entry"><span class="day-name">Mon Dec 29</span> Treadmill 3 miles · upper body workout</div>
+      <div class="day-entry"><span class="day-name">Tue Dec 30</span> 18 holes walking — Shot 72 (even par — personal first!)</div>
+      <div class="day-entry"><span class="day-name">Wed Dec 31</span> Massage · stretching</div>
+      <div class="day-entry"><span class="day-name">Thu Jan 1</span> Elliptical 30 mins (weighted vest)</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 4</span>
+        <span class="total-chip"><strong>Cardio:</strong> 6</span>
+        <span class="total-chip"><strong>Golf:</strong> 5 rounds</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 4</span>
+        <span class="total-chip"><strong>Recovery:</strong> 4</span>
+        <span class="total-chip"><strong>Active:</strong> 14 of 15</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Shot even par 72 on Dec 30 — personal first</div>
+        <div class="highlight-item">Progressive loading: chest press 70–80 lbs, rows 95–105 lbs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 2: DEC 4–17 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Dec 4 – Dec 17, 2025</span>
+        <span class="period-badge">86% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Thu Dec 4</span> Walking with Max 30 mins (weighted vest)</div>
+      <div class="day-entry"><span class="day-name">Fri Dec 5</span> Full body strength 4–5 sets (NYC)</div>
+      <div class="day-entry"><span class="day-name">Sat Dec 6</span> Full body strength 4–5 sets (NYC)</div>
+      <div class="day-entry"><span class="day-name">Sun Dec 7</span> Treadmill 1 mile (Boston)</div>
+      <div class="day-entry"><span class="day-name">Mon Dec 8</span> Elliptical 30 mins (weighted vest) · Weight 208.5 lbs</div>
+      <div class="day-entry"><span class="day-name">Tue Dec 9</span> Yoga with Sam</div>
+      <div class="day-entry"><span class="day-name">Wed Dec 10</span> Full body with Wayne 50 mins</div>
+      <div class="day-entry"><span class="day-name">Thu Dec 11</span> Peloton 30 mins · core · PT tune-up with Tony</div>
+      <div class="day-entry"><span class="day-name">Fri Dec 12</span> Full body dumbbell video 45 mins</div>
+      <div class="day-entry"><span class="day-name">Sat Dec 13</span> 18 holes walking (6 miles, cold)</div>
+      <div class="day-entry"><span class="day-name">Sun Dec 14</span> Rest (travel to Dallas)</div>
+      <div class="day-entry"><span class="day-name">Mon Dec 15</span> Rest (Dallas)</div>
+      <div class="day-entry"><span class="day-name">Tue Dec 16</span> Yoga and mobility with Sam (Miami)</div>
+      <div class="day-entry"><span class="day-name">Wed Dec 17</span> Workout with Fannar 50 mins · golf practice · sauna · cold plunge</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 6</span>
+        <span class="total-chip"><strong>Cardio:</strong> 4</span>
+        <span class="total-chip"><strong>Golf:</strong> 1 round</span>
+        <span class="total-chip"><strong>PT:</strong> 1</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 3</span>
+        <span class="total-chip"><strong>Active:</strong> 12 of 14</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">208.5 lbs Dec 8</div>
+        <div class="highlight-item">Trained across DC / NYC / Boston / Miami</div>
+        <div class="highlight-item">First golf round Dec 13</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERIOD 1: NOV 21 – DEC 3 -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Nov 21 – Dec 3, 2025</span>
+        <span class="period-badge">92% active</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <div class="day-entry"><span class="day-name">Fri Nov 21</span> Full body strength 30 mins · elliptical 20 mins (weighted vest) · massage · Weight: 207 lbs</div>
+      <div class="day-entry"><span class="day-name">Sat Nov 22</span> Stretching 20 mins · elliptical 30 mins (weighted vest)</div>
+      <div class="day-entry"><span class="day-name">Sun Nov 23</span> Full body dumbbell video 45 mins (weighted vest)</div>
+      <div class="day-entry"><span class="day-name">Mon Nov 24</span> Rest — travel to Prague</div>
+      <div class="day-entry"><span class="day-name">Tue Nov 25</span> Full-day walking/touring · treadmill 30 mins · core with Ava</div>
+      <div class="day-entry"><span class="day-name">Wed Nov 26</span> Rest · light walking (Prague)</div>
+      <div class="day-entry"><span class="day-name">Thu Nov 27</span> Full body workout 60 mins, 5 sets (Prague — Thanksgiving)</div>
+      <div class="day-entry"><span class="day-name">Fri Nov 28</span> Treadmill 30 mins · massage 90 mins</div>
+      <div class="day-entry"><span class="day-name">Sat Nov 29</span> Stretching 20 mins before flight · Weight: same as DC</div>
+      <div class="day-entry"><span class="day-name">Sun Nov 30</span> Walking 45 mins · full body dumbbell video 60 mins (weighted vest) · sauna</div>
+      <div class="day-entry"><span class="day-name">Mon Dec 1</span> Peloton 45 mins (weighted vest)</div>
+      <div class="day-entry"><span class="day-name">Tue Dec 2</span> Yoga with Sam</div>
+      <div class="day-entry"><span class="day-name">Wed Dec 3</span> PT exercises · stretching · cardio — modified (clavicle soreness)</div>
+      <div class="totals-row">
+        <span class="total-chip"><strong>Strength:</strong> 5</span>
+        <span class="total-chip"><strong>Cardio:</strong> 6</span>
+        <span class="total-chip"><strong>PT:</strong> 1</span>
+        <span class="total-chip"><strong>Yoga/Mobility:</strong> 5</span>
+        <span class="total-chip"><strong>Recovery:</strong> 2</span>
+        <span class="total-chip"><strong>Active:</strong> 12 of 13</span>
+      </div>
+      <div class="highlights">
+        <div class="highlight-item">Hit 207 lbs — maintained through Prague/Thanksgiving</div>
+        <div class="highlight-item">Clavicle soreness emerged late period</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MASTER SUMMARY ───────────────────────────── -->
+  <div class="section-title">Master Summary</div>
+
+  <!-- OVERALL TABLE -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Overall Activity — All Periods</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <table>
+        <tr><th>Period</th><th>Active</th><th>Total</th><th>%</th></tr>
+        <tr><td>Nov 21 – Dec 3, 2025</td><td>12</td><td>13</td><td>92%</td></tr>
+        <tr><td>Dec 4 – Dec 17, 2025</td><td>12</td><td>14</td><td>86%</td></tr>
+        <tr><td>Dec 18 – Jan 1, 2026</td><td>14</td><td>15</td><td>93%</td></tr>
+        <tr><td>Jan 2 – Jan 15, 2026</td><td>11</td><td>14</td><td>79%</td></tr>
+        <tr><td>Jan 16 – Jan 30, 2026</td><td>14</td><td>15</td><td>93%</td></tr>
+        <tr><td>Jan 31 – Feb 13, 2026</td><td>13</td><td>14</td><td>93%</td></tr>
+        <tr><td>Feb 14 – Mar 6, 2026</td><td>18</td><td>21</td><td>86%</td></tr>
+        <tr><td>Mar 7 – Mar 19, 2026</td><td>12</td><td>13</td><td>92%</td></tr>
+        <tr><td>Mar 20 – Apr 10, 2026</td><td>17</td><td>22</td><td>77%</td></tr>
+        <tr><td>Apr 11 – Apr 18, 2026</td><td>7</td><td>8</td><td>88%</td></tr>
+        <tr><td>Apr 19 – May 2, 2026</td><td>12</td><td>14</td><td>86%</td></tr>
+        <tr><td>May 3 – May 31, 2026</td><td>~19</td><td>29</td><td>~66%</td></tr>
+        <tr style="font-weight:700;"><td>TOTAL</td><td>~161</td><td>192</td><td>~84%</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- GOLF SCORES -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Golf Scores Under 80</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <table>
+        <tr><th>Date</th><th>Details</th><th>Score</th></tr>
+        <tr><td>Dec 30, 2025</td><td>Miami (walking)</td><td class="score-highlight">72 — even par, personal first</td></tr>
+        <tr><td>Jan 17, 2026</td><td>Miami (cart)</td><td class="score-highlight">77</td></tr>
+        <tr><td>Jan 19, 2026</td><td>Miami (walking)</td><td class="score-highlight">79</td></tr>
+        <tr><td>Feb 28, 2026</td><td>Miami (walking)</td><td class="score-highlight">74</td></tr>
+        <tr><td>Mar 2, 2026</td><td>Augusta National (walking)</td><td class="score-highlight">78</td></tr>
+        <tr><td>Apr 15, 2026</td><td>Shell Bay (walking)</td><td class="score-highlight">72</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- WEIGHT CHECK-INS -->
+  <div class="period-card">
+    <div class="period-header" onclick="toggle(this)">
+      <div class="period-header-left">
+        <span class="period-dates">Weight Check-ins ≤ 210 lbs</span>
+      </div>
+      <span class="period-chevron">▼</span>
+    </div>
+    <div class="period-body">
+      <table>
+        <tr><th>Date</th><th>Weight</th><th>Context</th></tr>
+        <tr><td>Nov 21, 2025</td><td>207 lbs</td><td>DC — below target</td></tr>
+        <tr><td>Nov 29, 2025</td><td>207 lbs</td><td>Prague — same as when left DC</td></tr>
+        <tr><td>Dec 8, 2025</td><td>208.5 lbs</td><td>DC — feeling lean</td></tr>
+        <tr><td>Jan 8, 2026</td><td>207.5 lbs</td><td>DC — maintaining target</td></tr>
+        <tr><td>Jan 25, 2026</td><td>207–209 lbs</td><td>Miami — steady all week</td></tr>
+        <tr><td>Feb 9, 2026</td><td>207 lbs</td><td>Miami — after tennis, lost 2 lbs</td></tr>
+        <tr><td>Feb 17, 2026</td><td>209 lbs</td><td>Miami — dropped from 210/211</td></tr>
+        <tr><td>Mar 12, 2026</td><td>210 lbs</td><td>Miami — post-PT morning</td></tr>
+        <tr><td>Mar 30, 2026</td><td>209.8 lbs</td><td>Miami — post Peloton</td></tr>
+        <tr><td>Apr 27, 2026</td><td>210 lbs</td><td>DC — post strength session</td></tr>
+        <tr><td>May 2026</td><td>208 lbs</td><td>Current</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    Maintained by Sam Breschi · Village Yoga · Last updated Jun 7, 2026
+  </div>
+
+</div>
+
+<script>
+  function toggle(header) {
+    var body = header.nextElementSibling;
+    var chevron = header.querySelector('.period-chevron');
+    var isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+    header.classList.toggle('open', !isOpen);
+  }
+</script>
+</body>
+</html>
